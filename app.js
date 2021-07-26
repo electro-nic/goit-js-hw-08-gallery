@@ -63,3 +63,134 @@ const galleryItems = [
     description: 'Lighthouse Coast Sea',
   },
 ];
+
+//add list card to markup
+const galleryContainer = document.querySelector('.js-gallery');
+const pictureMarkup = createPictureGallery(galleryItems);
+
+galleryContainer.insertAdjacentHTML('beforeend', pictureMarkup);
+
+//create list card 
+console.log(createPictureGallery(galleryItems));
+
+function createPictureGallery(galleryItems) {
+  return galleryItems
+    .map(({ preview, original, description }) => {
+    return `<li class="gallery__item">
+  <a
+    class="gallery__link"
+    href="${original}"
+  >
+    <img
+      class="gallery__image"
+      src="${preview}"
+      data-source="${original}"
+      alt="${description}"
+    />
+  </a>
+</li>
+`;
+  })
+    .join('');
+}
+
+//delegate event on ul with click
+
+galleryContainer.addEventListener('click', onGalleryContainerClick);
+
+function onGalleryContainerClick(event) {
+  event.preventDefault(event);
+
+  const isGalleryContainerEl = event.target.classList.contains('gallery__image');
+  
+
+  if (!isGalleryContainerEl) {
+    return;
+  }
+
+  console.log(event.target.src);
+  console.log(event.target.dataset.source);
+  console.log(event.currentTarget);
+  console.log(event.target);
+  /* console.log(event); */
+    
+  //open modal window
+
+  modal.classList.toggle('is-open');
+  
+  //change url at открытой open modal window
+  const currentActiveImg = document.querySelector('.lightbox.is-open');
+    
+if (currentActiveImg) {
+  imageEl.setAttribute("src", `${event.target.dataset.source}`);
+  imageEl.setAttribute("alt", `${event.target.alt}`);
+}
+  
+}
+const imageEl = document.querySelector('img.lightbox__image');
+const modal = document.querySelector('.lightbox');
+
+//close open modal window
+const closeButton = document.querySelector('button[data-action="close-lightbox"]');
+
+function closeModal() {
+  modal.classList.remove('is-open');
+
+  //cleanup src and alt after closing modal window
+  
+  imageEl.setAttribute("src", '');
+  imageEl.setAttribute("alt", '');
+}
+
+closeButton.addEventListener('click', closeModal);
+
+//closing by ESC
+
+function closeModalESC(event) {
+  if (event.key !== 'Escape') {
+    return;
+  }
+  closeModal();
+}
+
+window.addEventListener('keyup', closeModalESC);
+
+//closing by click on  overlay
+const closeButtonOverlay = document.querySelector('div.lightbox__overlay');
+
+function closeModalOverlay(event) {
+  closeModal();
+}
+closeButtonOverlay.addEventListener('click', closeModalOverlay);
+
+//toggle arrows between images
+function onKeyArrowChangeImg(event) {
+  if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') {
+    return;
+  }
+  let newIndex = 0;
+  let src = imageEl.src;
+  let newObject = {};
+
+  if (event.key === 'ArrowRight') {
+    newObject = galleryItems.find(item => item.original === src)
+    newIndex = galleryItems.indexOf(newObject) + 1;
+
+    if (newIndex === galleryItems.length) {
+      newIndex = 0;
+    }
+  }
+
+  if (event.key === 'ArrowLeft') {
+    newObject = galleryItems.find(item => item.original === src)
+    newIndex = galleryItems.indexOf(newObject) - 1;
+
+    if (newIndex < galleryItems.length) {
+      newIndex = galleryItems.length - 1;
+    }
+  }
+
+  imageEl.src = galleryItems[newIndex].original;
+}
+
+window.addEventListener('keyup', onKeyArrowChangeImg);
